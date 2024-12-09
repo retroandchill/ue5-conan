@@ -20,11 +20,11 @@ class UnrealPlugin:
         temp_project_folder = get_build_folder(self.conanfile.build_folder)
         project_path = find_uproject_file(temp_project_folder, BLANK_TEMPLATE_NAME)
         base_cmd = [build_tool, f'-Project={project_path}', BLANK_TEMPLATE_EDITOR_CONFIG,
-                    str(self.conanfile.options.platform), 'Development']
+                    str(self.conanfile.options.platform), 'DebugGame+Development']
         subprocess.run(base_cmd)
 
         target_plugin_directory = find_plugin_path(temp_project_folder, self.plugin_name)
         for folder in BUILD_FOLDERS:
-            copy(self, '*', dst=os.path.join(self.conanfile.build_folder, folder),
+            copy(self.conanfile, '*', dst=os.path.join(self.conanfile.build_folder, folder),
                  src=os.path.join(target_plugin_directory, folder))
-        rmdir(self, temp_project_folder)
+        rmdir(self.conanfile, temp_project_folder)

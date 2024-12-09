@@ -9,4 +9,4 @@ class UProjectFile(BaseModel):
     category: str = Field(alias="Category")
     description: str = Field(alias="Description")
     modules: list[AddedModule] = Field(alias="Modules")
-    plugins: list[AddedPlugin] = Field(alias="Plugins", default_factory=list)
+    plugins: list[AddedPlugin] = Field(alias="Plugins")

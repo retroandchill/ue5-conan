@@ -14,6 +14,7 @@ from ue5_conan.files.template_files import get_template_file, BLANK_TEMPLATE_NAM
 class UnrealPluginToolchain:
     def __init__(self, conanfile: ConanFile, plugin_name: str):
         self.conanfile = conanfile
+        self.plugin_folder = str(self.conanfile.source_folder)
         self.plugin_name = str(plugin_name)
 
     def generate(self):
@@ -22,7 +23,7 @@ class UnrealPluginToolchain:
         copy(self.conanfile, "*", dst=temp_project_folder, src=templates_path)
 
         target_plugin_directory = create_plugin_path(temp_project_folder, self.plugin_name)
-        copy(self.conanfile, "*", dst=target_plugin_directory, src=self.conanfile.source_folder)
+        copy(self.conanfile, "*", dst=target_plugin_directory, src=self.plugin_folder)
 
         uproject_file = find_uproject_file(temp_project_folder, BLANK_TEMPLATE_NAME)
         with open(uproject_file, 'r') as f:

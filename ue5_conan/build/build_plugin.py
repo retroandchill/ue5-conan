@@ -2,6 +2,7 @@ import os
 import subprocess
 
 from conan import ConanFile
+from conan.errors import ConanException
 from conan.tools.files import copy, rmdir
 
 from ue5_conan.files.build_tools import get_unreal_build_tool_path
@@ -19,9 +20,12 @@ class UnrealPlugin:
                                                 self.conanfile.settings.os)
         temp_project_folder = get_build_folder(self.conanfile.build_folder)
         project_path = find_uproject_file(temp_project_folder, BLANK_TEMPLATE_NAME)
-        base_cmd = [build_tool, f'-Project={project_path}', BLANK_TEMPLATE_EDITOR_CONFIG,
-                    str(self.conanfile.options.platform), 'DebugGame+Development']
-        subprocess.run(base_cmd)
+        base_cmd = [build_tool, BLANK_TEMPLATE_EDITOR_CONFIG, str(self.conanfile.options.platform),
+                    'DebugGame+Development', f'-Project={project_path}', '-WaitMutex', '-FromMSBuild',
+                    '-UsePrecompiled']
+        result = subprocess.run(base_cmd)
+        if result.returncode != 0:
+            raise ConanException("Build failed")
 
         target_plugin_directory = find_plugin_path(temp_project_folder, self.plugin_name)
         for folder in BUILD_FOLDERS:

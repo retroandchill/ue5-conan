@@ -44,3 +44,4 @@ def configure_unreal_package(conanfile: ConanFile):
 
     if conanfile.options.platform == None:
         configure_default_platform(conanfile)
+

@@ -12,6 +12,10 @@ setup(
     install_requires=[
         'conan>=2.10.1',
         'pydantic>=2.10.3',
-        'clang-format >= 19.1.5'
+        'pystache >= 0.6.6'
     ],
+    include_package_data=True,
+    package_data={
+        'ue5_conan': ['**/*.mustache']
+    }
 )

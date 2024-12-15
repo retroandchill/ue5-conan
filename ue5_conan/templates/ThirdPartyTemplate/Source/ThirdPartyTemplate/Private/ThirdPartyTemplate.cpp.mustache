@@ -1,0 +1,48 @@
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
+
+#include "{{plugin_name}}.h"
+#include "Misc/MessageDialog.h"
+#include "Modules/ModuleManager.h"
+#include "Interfaces/IPluginManager.h"
+#include "Misc/Paths.h"
+#include "HAL/PlatformProcess.h"
+
+#define LOCTEXT_NAMESPACE "F{{plugin_name}}Module"
+
+void F{{plugin_name}}Module::StartupModule()
+{
+    {{#link_shared}}
+	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
+
+	// Get the base directory of this plugin
+	FString BaseDir = IPluginManager::Get().FindPlugin("{{plugin_name}}")->GetBaseDir();
+
+	// Add on the relative location of the third party dll and load it
+	FString LibraryPath;
+#if PLATFORM_WINDOWS
+	LibraryPath = FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/{{plugin_name}}Library/Win64/{{shared_library_name}}.dll"));
+#elif PLATFORM_MAC
+    LibraryPath = FPaths::Combine(*BaseDir, TEXT("Source/ThirdParty/{{plugin_name}}Library/Mac/Release/{{shared_library_name}}.dylib"));
+#elif PLATFORM_LINUX
+	LibraryPath = FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/{{plugin_name}}Library/Linux/x86_64-unknown-linux-gnu/{{shared_library_name}}.so"));
+#endif // PLATFORM_WINDOWS
+
+	{{plugin_name}}Handle = !LibraryPath.IsEmpty() ? FPlatformProcess::GetDllHandle(*LibraryPath) : nullptr;
+    {{/link_shared}}
+}
+
+void F{{plugin_name}}Module::ShutdownModule()
+{
+    {{#link_shared}}
+	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
+	// we call this function before unloading the module.
+
+	// Free the dll handle
+	FPlatformProcess::FreeDllHandle({{plugin_name}}Handle);
+	{{plugin_name}}Handle = nullptr;
+    {{/link_shared}}
+}
+
+#undef LOCTEXT_NAMESPACE
+	
+IMPLEMENT_MODULE(F{{plugin_name}}Module, {{plugin_name}})

@@ -1,0 +1,20 @@
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
+
+#pragma once
+
+#include "Modules/ModuleManager.h"
+
+class F{{plugin_name}}Module : public IModuleInterface
+{
+public:
+
+	/** IModuleInterface implementation */
+	virtual void StartupModule() override;
+	virtual void ShutdownModule() override;
+
+    {{#link_shared}}
+private:
+	/** Handle to the test dll we will load */
+	void*	{{plugin_name}}Handle;
+    {{/link_shared}}
+};

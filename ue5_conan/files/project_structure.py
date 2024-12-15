@@ -1,4 +1,5 @@
 import os
+import re
 from typing import Optional
 
 SOURCE_FOLDERS = ['Config', 'Resources', 'Source']
@@ -36,4 +37,7 @@ def find_plugin_name(plugin_folder: str):
             if filename.endswith('.uplugin'):
                 return os.path.basename(filename).removesuffix('.uplugin')
 
-    raise FileNotFoundError('Could not find any .uplugin files!')
+    return None
+
+def generate_plugin_name(package_name: str):
+    return ''.join(map(lambda word: word.title(), re.split(r'[-_]', package_name)))

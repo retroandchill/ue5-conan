@@ -39,7 +39,7 @@ class UnrealPluginDeps:
                 match = re.search(r'public\s+\w+\s*\(\s*ReadOnlyTargetRules\s+(\w+)\s*\)\s*:\s*base\(\s*\1\s*\)\s*\{',
                                  content, re.MULTILINE)
                 if match is None:
-                    raise ValueError('Could not find assembly declaration!')
+                    continue
 
                 index = match.span(0)[1]
                 content = content[:index] + os.linesep + 'bUsePrecompiled = true;' + os.linesep + content[index:]

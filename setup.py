@@ -11,6 +11,7 @@ setup(
     long_description_content_type='text/markdown',
     install_requires=[
         'conan>=2.10.1',
-        'pydantic>=2.10.3'
+        'pydantic>=2.10.3',
+        'clang-format >= 19.1.5'
     ],
 )

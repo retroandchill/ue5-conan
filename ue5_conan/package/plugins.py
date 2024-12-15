@@ -27,4 +27,5 @@ def package_plugin(conanfile: ConanFile, source_folder: Optional[str] = None):
              src=os.path.join(source_folder, folder))
     for folder in BUILD_FOLDERS:
         copy(conanfile, '*', dst=os.path.join(conanfile.package_folder, folder),
-             src=os.path.join(conanfile.build_folder, folder))
+             src=os.path.join(conanfile.build_folder, folder),
+             excludes=['*.rsp', '*.sarif', '*.exp'])

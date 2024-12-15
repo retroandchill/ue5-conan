@@ -7,7 +7,6 @@ from conan.tools.files import copy, rmdir
 
 from ue5_conan.files.build_tools import get_unreal_build_tool_path
 from ue5_conan.files.project_structure import get_build_folder, find_uproject_file, find_plugin_path, BUILD_FOLDERS
-from ue5_conan.files.template_files import BLANK_TEMPLATE_NAME, BLANK_TEMPLATE_EDITOR_CONFIG
 
 
 class UnrealPlugin:
@@ -25,13 +24,14 @@ class UnrealPlugin:
         build_tool = get_unreal_build_tool_path(self.conanfile.options.ue_install_location,
                                                 self.conanfile.settings.os)
         temp_project_folder = get_build_folder(self.conanfile.build_folder)
-        project_path = find_uproject_file(temp_project_folder, BLANK_TEMPLATE_NAME)
+        project_path = find_uproject_file(temp_project_folder, 'HostProject')
         plugin_path = os.path.join(find_plugin_path(temp_project_folder, self.plugin_name),
                                    f'{self.plugin_name}.uplugin')
         for target, config in self.CONFIGS:
             base_cmd = [build_tool, target, str(self.conanfile.options.platform),
                         config, f'-Project={project_path}', f'-Plugin={plugin_path}',
-                        '-BuildPluginAsLocal', '-NoUBTMakefiles', '-NoHotReload']
+                        '-BuildPluginAsLocal', '-NoUBTMakefiles', '-NoHotReload',
+                        '-ForceUnity', '-DisableAdaptiveUnity']
             result = subprocess.run(base_cmd)
 
             if result.returncode != 0:
@@ -42,4 +42,3 @@ class UnrealPlugin:
         for folder in BUILD_FOLDERS:
             copy(self.conanfile, '*', dst=os.path.join(self.conanfile.build_folder, folder),
                  src=os.path.join(target_plugin_directory, folder))
-        rmdir(self.conanfile, temp_project_folder)

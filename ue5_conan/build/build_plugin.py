@@ -11,6 +11,12 @@ from ue5_conan.files.template_files import BLANK_TEMPLATE_NAME, BLANK_TEMPLATE_E
 
 
 class UnrealPlugin:
+    CONFIGS = [
+        ('UnrealEditor', 'Development'),
+        ('UnrealGame', 'Development'),
+        ('UnrealGame', 'Shipping')
+    ]
+
     def __init__(self, conanfile: ConanFile, plugin_name: str):
         self.conanfile = conanfile
         self.plugin_name = plugin_name
@@ -20,12 +26,17 @@ class UnrealPlugin:
                                                 self.conanfile.settings.os)
         temp_project_folder = get_build_folder(self.conanfile.build_folder)
         project_path = find_uproject_file(temp_project_folder, BLANK_TEMPLATE_NAME)
-        base_cmd = [build_tool, BLANK_TEMPLATE_EDITOR_CONFIG, str(self.conanfile.options.platform),
-                    'DebugGame+Development', f'-Project={project_path}', '-WaitMutex', '-FromMSBuild',
-                    '-UsePrecompiled']
-        result = subprocess.run(base_cmd)
-        if result.returncode != 0:
-            raise ConanException("Build failed")
+        plugin_path = os.path.join(find_plugin_path(temp_project_folder, self.plugin_name),
+                                   f'{self.plugin_name}.uplugin')
+        for target, config in self.CONFIGS:
+            base_cmd = [build_tool, target, str(self.conanfile.options.platform),
+                        config, f'-Project={project_path}', f'-Plugin={plugin_path}',
+                        '-BuildPluginAsLocal', '-NoUBTMakefiles', '-NoHotReload']
+            result = subprocess.run(base_cmd)
+
+            if result.returncode != 0:
+                raise ConanException("Build failed")
+
 
         target_plugin_directory = find_plugin_path(temp_project_folder, self.plugin_name)
         for folder in BUILD_FOLDERS:

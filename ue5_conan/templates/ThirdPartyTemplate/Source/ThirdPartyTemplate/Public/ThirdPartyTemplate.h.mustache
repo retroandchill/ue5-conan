@@ -4,6 +4,10 @@
 
 #include "Modules/ModuleManager.h"
 
+{{#link_shared}}
+#include <array>
+{{/link_shared}}
+
 class F{{plugin_name}}Module : public IModuleInterface
 {
 public:
@@ -14,7 +18,13 @@ public:
 
     {{#link_shared}}
 private:
+    static constexpr std::array PluginDllNames = {
+        {{#shared_libraries}}
+        TEXT("{{library_name}}"),
+        {{/shared_libraries}}
+    };
+
 	/** Handle to the test dll we will load */
-	void*	{{plugin_name}}Handle;
+	std::array<void*, sizeof(PluginDllNames)> {{plugin_name}}Handles = { {{#shared_libraries}}nullptr, {{/shared_libraries}} };
     {{/link_shared}}
 };

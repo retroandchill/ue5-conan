@@ -3,39 +3,22 @@
 using System.IO;
 using UnrealBuildTool;
 
-public class {{plugin_name}}Library : ModuleRules
+public class {{library_plugin_name}} : ModuleRules
 {
-	public {{plugin_name}}Library(ReadOnlyTargetRules Target) : base(Target)
+	public {{library_plugin_name}}(ReadOnlyTargetRules Target) : base(Target)
 	{
 		Type = ModuleType.External;
         {{#include_dirs}}
 		PublicSystemIncludePaths.Add("$(ModuleDir)/{{dirname}}");
         {{/include_dirs}}
 
-        {{#link_shared}}
-		if (Target.Platform == UnrealTargetPlatform.Win64)
-		{
-			// Add the import library
-			PublicAdditionalLibraries.Add(Path.Combine(ModuleDirectory, "x64", "Release", "ExampleLibrary.lib"));
+        {{#link_libraries}}
+        PublicAdditionalLibraries.Add("$(ModuleDir)/{{library_name}}");
+        {{/link_libraries}}
 
-			// Delay-load the DLL, so we can load it from the right place first
-			PublicDelayLoadDLLs.Add("ExampleLibrary.dll");
-
-			// Ensure that the DLL is staged along with the executable
-			RuntimeDependencies.Add("$(PluginDir)/Binaries/ThirdParty/ThirdPartyTemplateLibrary/Win64/ExampleLibrary.dll");
-		}
-		else if (Target.Platform == UnrealTargetPlatform.Mac)
-		{
-			PublicDelayLoadDLLs.Add(Path.Combine(ModuleDirectory, "Mac", "Release", "libExampleLibrary.dylib"));
-			RuntimeDependencies.Add("$(PluginDir)/Source/ThirdParty/ThirdPartyTemplateLibrary/Mac/Release/libExampleLibrary.dylib");
-		}
-		else if (Target.Platform == UnrealTargetPlatform.Linux)
-		{
-			string ExampleSoPath = Path.Combine("$(PluginDir)", "Binaries", "ThirdParty", "ThirdPartyTemplateLibrary", "Linux", "x86_64-unknown-linux-gnu", "libExampleLibrary.so");
-			PublicAdditionalLibraries.Add(ExampleSoPath);
-			PublicDelayLoadDLLs.Add(ExampleSoPath);
-			RuntimeDependencies.Add(ExampleSoPath);
-		}
-		{{/link_shared}}
+        {{#shared_libraries}}
+        PublicDelayLoadDLLs.Add("{{simple_name}}");
+        RuntimeDependencies.Add("$(ModuleDir)/{{library_name}}");
+        {{/shared_libraries}}
 	}
 }

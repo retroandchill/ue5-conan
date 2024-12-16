@@ -11,35 +11,35 @@
 
 void F{{plugin_name}}Module::StartupModule()
 {
-    {{#link_shared}}
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
+    {{#link_shared}}
 
 	// Get the base directory of this plugin
 	FString BaseDir = IPluginManager::Get().FindPlugin("{{plugin_name}}")->GetBaseDir();
 
 	// Add on the relative location of the third party dll and load it
-	FString LibraryPath;
-#if PLATFORM_WINDOWS
-	LibraryPath = FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/{{plugin_name}}Library/Win64/{{shared_library_name}}.dll"));
-#elif PLATFORM_MAC
-    LibraryPath = FPaths::Combine(*BaseDir, TEXT("Source/ThirdParty/{{plugin_name}}Library/Mac/Release/{{shared_library_name}}.dylib"));
-#elif PLATFORM_LINUX
-	LibraryPath = FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/{{plugin_name}}Library/Linux/x86_64-unknown-linux-gnu/{{shared_library_name}}.so"));
-#endif // PLATFORM_WINDOWS
-
-	{{plugin_name}}Handle = !LibraryPath.IsEmpty() ? FPlatformProcess::GetDllHandle(*LibraryPath) : nullptr;
+    {{#shared_libraries}}
+    FString LibraryPath{{index}} = FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/{{plugin_name}}Library/{{library_name}}"));
+    {{plugin_name}}Handles[{{index}}] = !LibraryPath{{index}}.IsEmpty() ? FPlatformProcess::GetDllHandle(*LibraryPath{{index}}) : nullptr;
+    {{/shared_libraries}}
     {{/link_shared}}
 }
 
 void F{{plugin_name}}Module::ShutdownModule()
 {
-    {{#link_shared}}
-	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
+    // This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
+    {{#link_shared}}
 
 	// Free the dll handle
-	FPlatformProcess::FreeDllHandle({{plugin_name}}Handle);
-	{{plugin_name}}Handle = nullptr;
+    for (auto& Handle : {{plugin_name}}Handles)
+    {
+        if (Handle != nullptr)
+        {
+            FPlatformProcess::FreeDllHandle(Handle);
+            Handle = nullptr;
+        }
+    }
     {{/link_shared}}
 }
 

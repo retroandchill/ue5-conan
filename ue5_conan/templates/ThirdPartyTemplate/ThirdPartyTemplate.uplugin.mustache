@@ -12,7 +12,8 @@
 	"CanContainContent": false,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
-	"Installed": false,
+    {{#with_wrapper}}
+    "Installed": false,
 	"Modules": [
 		{
 			"Name": "{{plugin_name}}",
@@ -20,4 +21,9 @@
 			"LoadingPhase": "Default"
 		}
 	]
+    {{/with_wrapper}}
+    {{^with_wrapper}}
+    "Installed": false
+    {{/with_wrapper}}
+
 }

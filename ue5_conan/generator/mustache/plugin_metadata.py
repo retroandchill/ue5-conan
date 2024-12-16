@@ -40,6 +40,7 @@ class PluginMetadata(TypedDict):
     version_name: str
     description: str
     link_shared: bool
+    with_wrapper: bool
     include_dirs: list[IncludeDir]
     link_libraries: list[LinkLibrary]
     shared_libraries: list[SharedLibrary]

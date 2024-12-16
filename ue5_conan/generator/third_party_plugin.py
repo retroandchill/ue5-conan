@@ -25,21 +25,25 @@ def fill_out_template(template: str, metadata: PluginMetadata, output_file: str)
 
 
 class ThirdPartyPlugin:
-    def __init__(self, name: str, package_info: ConanFileInterface):
+    def __init__(self, name: str, package_info: ConanFileInterface, always_wrap: bool = False):
         self.name = name
         self.package_info = package_info
+        self.always_wrap = always_wrap
 
     def generate(self, conanfile: ConanFile, dest: LiteralString | str):
         if os.path.exists(dest):
             shutil.rmtree(dest)
 
 
+        shared = self.is_shared()
+        with_wrapper = shared or self.always_wrap
         plugin_metadata: PluginMetadata = {
             'plugin_name': self.name,
-            'library_plugin_name': f'{self.name}Library',
+            'library_plugin_name': f'{self.name}Library' if with_wrapper else self.name,
             'version_name': self.package_info.ref.version,
             'description': self.package_info.description,
-            'link_shared': self.is_shared(),
+            'link_shared': shared,
+            'with_wrapper': with_wrapper,
             'include_dirs': list(map(lambda d: make_include_dir(self.package_info.package_path, d), self.package_info.cpp_info.includedirs)),
             'link_libraries': list(map(lambda d: make_link_library(self.package_info.package_path, d), self.get_link_libraries())),
             'shared_libraries': self.get_shared_library_paths(),
@@ -48,18 +52,19 @@ class ThirdPartyPlugin:
                                  plugin_metadata, os.path.join(dest, f'{self.name}.uplugin'))
 
         source_dir = os.path.join(TEMPLATE_BASE_DIR, 'Source')
-        wrapper_dir = os.path.join(source_dir, 'ThirdPartyTemplate')
-        fill_out_template(os.path.join(wrapper_dir, 'ThirdPartyTemplate.Build.cs.mustache'),
-                               plugin_metadata, os.path.join(dest, 'Source', self.name, f'{self.name}.Build.cs'))
-        fill_out_template(os.path.join(wrapper_dir, 'Public', 'ThirdPartyTemplate.h.mustache'),
-                               plugin_metadata, os.path.join(dest, 'Source', self.name, 'Public', f'{self.name}.h'))
-        fill_out_template(os.path.join(wrapper_dir, 'Private', 'ThirdPartyTemplate.cpp.mustache'),
-                               plugin_metadata, os.path.join(dest, 'Source', self.name, 'Private', f'{self.name}.cpp'))
+        if with_wrapper:
+            wrapper_dir = os.path.join(source_dir, 'ThirdPartyTemplate')
+            fill_out_template(os.path.join(wrapper_dir, 'ThirdPartyTemplate.Build.cs.mustache'),
+                                   plugin_metadata, os.path.join(dest, 'Source', self.name, f'{self.name}.Build.cs'))
+            fill_out_template(os.path.join(wrapper_dir, 'Public', 'ThirdPartyTemplate.h.mustache'),
+                                   plugin_metadata, os.path.join(dest, 'Source', self.name, 'Public', f'{self.name}.h'))
+            fill_out_template(os.path.join(wrapper_dir, 'Private', 'ThirdPartyTemplate.cpp.mustache'),
+                                   plugin_metadata, os.path.join(dest, 'Source', self.name, 'Private', f'{self.name}.cpp'))
 
         library_dir = os.path.join(source_dir, 'ThirdParty', 'ThirdPartyTemplateLibrary')
-        library_output = os.path.join(dest, 'Source', 'ThirdParty', f'{self.name}Library')
+        library_output = os.path.join(dest, 'Source', 'ThirdParty', plugin_metadata['library_plugin_name'])
         fill_out_template(os.path.join(library_dir, 'ThirdPartyTemplateLibrary.Build.cs.mustache'),
-                               plugin_metadata, os.path.join(library_output, f'{self.name}Library.Build.cs'))
+                               plugin_metadata, os.path.join(library_output, f'{plugin_metadata["library_plugin_name"]}.Build.cs'))
 
         copy(conanfile, '*', dst=os.path.join(dest, 'Resources'),
              src=get_resource_file(os.path.join(TEMPLATE_BASE_DIR, 'Resources')))

@@ -20,5 +20,9 @@ public class {{library_plugin_name}} : ModuleRules
         PublicDelayLoadDLLs.Add("{{simple_name}}");
         RuntimeDependencies.Add("$(ModuleDir)/{{library_name}}");
         {{/shared_libraries}}
+
+        {{#public_defines}}
+        PublicDefinitions.Add("{{define}}");
+        {{/public_defines}}
 	}
 }

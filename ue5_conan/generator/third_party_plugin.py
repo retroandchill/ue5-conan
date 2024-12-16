@@ -11,7 +11,7 @@ from conans.model.conanfile_interface import ConanFileInterface
 
 from ue5_conan.files.resources import read_resource_file, get_resource_file
 from ue5_conan.generator.mustache.plugin_metadata import PluginMetadata, make_include_dir, make_link_library, \
-    make_shared_library
+    make_shared_library, make_define
 
 TEMPLATE_BASE_DIR = os.path.join('templates', 'ThirdPartyTemplate')
 
@@ -34,7 +34,6 @@ class ThirdPartyPlugin:
         if os.path.exists(dest):
             shutil.rmtree(dest)
 
-
         shared = self.is_shared()
         with_wrapper = shared or self.always_wrap
         plugin_metadata: PluginMetadata = {
@@ -47,6 +46,7 @@ class ThirdPartyPlugin:
             'include_dirs': list(map(lambda d: make_include_dir(self.package_info.package_path, d), self.package_info.cpp_info.includedirs)),
             'link_libraries': list(map(lambda d: make_link_library(self.package_info.package_path, d), self.get_link_libraries())),
             'shared_libraries': self.get_shared_library_paths(),
+            'public_defines': list(map(make_define, self.package_info.cpp_info.defines)),
         }
         fill_out_template(os.path.join(TEMPLATE_BASE_DIR, 'ThirdPartyTemplate.uplugin.mustache'),
                                  plugin_metadata, os.path.join(dest, f'{self.name}.uplugin'))

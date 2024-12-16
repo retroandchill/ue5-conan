@@ -28,6 +28,7 @@ class UnrealPluginDeps:
         self.project_folder = self.conanfile.build_folder
         self.mark_precompiled = False
         self.wrap_external_dependencies = False
+        self.plugin_names: dict[str, str] = {}
 
     def generate(self):
         plugins_folder = os.path.join(get_plugins_folder(self.project_folder), '.conan')
@@ -43,7 +44,7 @@ class UnrealPluginDeps:
                 copy(self.conanfile, "*", dst=destination, src=dependency.package_folder)
                 self.mark_dependencies_as_precompiled(destination)
             else:
-                plugin_name = generate_plugin_name(dependency.ref.name)
+                plugin_name = self.get_third_party_plugin_name(dependency)
                 plugin_generator = ThirdPartyPlugin(plugin_name, dependency, self.wrap_external_dependencies)
                 destination = os.path.join(plugins_folder, plugin_name)
                 plugin_generator.generate(self.conanfile, destination)
@@ -53,6 +54,12 @@ class UnrealPluginDeps:
 
         with open(uproject_file, 'w') as f:
             json.dump(content.model_dump(exclude_none=True, by_alias=True), f, indent=4)
+
+    def get_third_party_plugin_name(self, dependency: ConanFileInterface):
+        if dependency.ref.name in self.plugin_names:
+            return self.plugin_names[dependency.ref.name]
+
+        return generate_plugin_name(dependency.ref.name)
 
     def mark_dependencies_as_precompiled(self, package_folder: LiteralString):
         if not self.mark_precompiled:

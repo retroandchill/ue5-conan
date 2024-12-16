@@ -34,6 +34,14 @@ def make_shared_library(base: Path, library_name: str) -> SharedLibrary:
         'index': 0
     }
 
+class Define(TypedDict):
+    define: str
+
+def make_define(define: str) -> Define:
+    return {
+        'define': define
+    }
+
 class PluginMetadata(TypedDict):
     plugin_name: str
     library_plugin_name: str
@@ -44,3 +52,4 @@ class PluginMetadata(TypedDict):
     include_dirs: list[IncludeDir]
     link_libraries: list[LinkLibrary]
     shared_libraries: list[SharedLibrary]
+    public_defines: list[Define]
